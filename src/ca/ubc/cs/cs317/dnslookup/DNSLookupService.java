@@ -104,8 +104,11 @@ public class DNSLookupService {
             throws DNSErrorException {
         Set<CommonResourceRecord> ans = new HashSet<>();
         /* TODO: To be implemented by the student */
-        
-        buildQuery(question);
+        DNSQuestion rootQuestion = new DNSQuestion("a.root-servers.net",  RecordType.A, RecordClass.IN);
+        CommonResourceRecord rootServer = cache.getCachedResults(rootQuestion).get(0);
+
+        System.out.println(rootServer.getInetResult());
+//        individualQueryProcess(question);
         return ans;
     }
 
@@ -144,13 +147,11 @@ public class DNSLookupService {
      */
     public DNSMessage buildQuery(DNSQuestion question) {
         /* TODO: To be implemented by the student */
-    	System.out.println("Question recordClass: " + question.getHostName());
     	
     	
     	// get random number
     	Random r = new Random();
         int id = r.nextInt(0xffff + 1);
-    	System.out.println("Question ID: " + id);
     	DNSMessage message = new DNSMessage((short)id);
     	message.setQR(false);
     	message.addQuestion(question);
@@ -159,8 +160,6 @@ public class DNSLookupService {
     	
     	message.setQDCount(1);
     	
-    	System.out.println("Message: " + message);
-    	System.out.println("End Message");
 
         return message;
     }

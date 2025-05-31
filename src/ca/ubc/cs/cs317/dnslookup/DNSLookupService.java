@@ -105,13 +105,21 @@ public class DNSLookupService {
         /* TODO: To be implemented by the student */
 
         InetAddress curAddress;
-
+        List<CommonResourceRecord> cached = cache.getCachedResults(question);
         
-        for (int i = 1; i <= 100; i++) {
+        while (cached.size() == 0){
         	curAddress =  getBestInet(question);
-        	System.out.println(curAddress);
-        	individualQueryProcess(question, curAddress);
+        	Set<ResourceRecord> newRecordds = individualQueryProcess(question, curAddress);
+        	
+            for (ResourceRecord record: newRecordds) {
+            	if(record instanceof CommonResourceRecord) { 
+            		cache.addResult((CommonResourceRecord) record);
+            	}
+            }
+            cached = cache.getCachedResults(question);
         }
+        
+        ans.addAll(cached);
         
 //        individualQueryProcess(question);
         return ans;
@@ -123,7 +131,6 @@ public class DNSLookupService {
 
         DNSQuestion bestQuestion = new DNSQuestion(best.getTextResult(),  RecordType.A, RecordClass.IN);
         CommonResourceRecord bestServer = cache.getCachedResults(bestQuestion).get(0);
-    	System.out.println(bestServer);
 
         return bestServer.getInetResult();
     }
@@ -151,7 +158,6 @@ public class DNSLookupService {
     	Set<ResourceRecord> recordSet;
     	byte[] request = buildQuery(question).getUsed();
         try {
-        	System.out.println("Sending");
 	
 	        DatagramPacket packet = new DatagramPacket(request, request.length, server, DEFAULT_DNS_PORT);
 			socket.send(packet);
@@ -174,11 +180,6 @@ public class DNSLookupService {
 			return null;
 		}
         
-        for (ResourceRecord record: recordSet) {
-        	if(record instanceof CommonResourceRecord) { 
-        		cache.addResult((CommonResourceRecord) record);
-        	}
-        }
 
         
 
@@ -238,7 +239,6 @@ public class DNSLookupService {
     	}
     	
     	Set<ResourceRecord> recordSet = new HashSet<ResourceRecord>();
-    	System.out.println("Question num: " + message.getQDCount());
     	
     	int qDCount = message.getQDCount();
     	DNSQuestion question = message.getQuestion();

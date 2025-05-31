@@ -224,35 +224,29 @@ public class DNSLookupService {
     public Set<ResourceRecord> processResponse(DNSMessage message) throws DNSErrorException {
         /* TODO: To be implemented by the student */
     	
-
+    	
+    	if(message.getRcode() != 0) {
+    		throw new DNSErrorException("Rcode was not 0");
+    	}
+    	
+    	Set<ResourceRecord> recordSet = new HashSet<ResourceRecord>();
     	System.out.println("Question num: " + message.getQDCount());
     	
     	int qDCount = message.getQDCount();
     	DNSQuestion question = message.getQuestion();
     	
     	
-    	System.out.println("Question: " + question);
     	
+    	int numRecords = message.getANCount() + message.getNSCount() + message.getARCount();
     	
-    	int numAuth = message.getANCount();
-    	
-    	System.out.println("s: ");
-    	for (int i = 0; i < numAuth; i++) {
-    		System.out.println(message.getRR());
+    	for (int i = 0; i < numRecords; i++) {
+    		recordSet.add(message.getRR());
     	}
-    	
-    	int numNS = message.getNSCount();
-    	
-    	System.out.println("NSs: " + numNS);
 
-    	for (int i = 0; i < numNS; i++) {
-    		System.out.println(message.getRR());
-    	}
-    	
-    	System.out.println(message);
+
 
     	
-        return null;
+        return recordSet;
     }
 
     public static class DNSErrorException extends Exception {

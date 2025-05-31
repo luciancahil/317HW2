@@ -21,7 +21,6 @@ public class DNSLookupCUI implements DNSVerbosePrinter {
      * @param args list of arguments specified in the command line.
      */
     public static void main(String[] args) {
-    	System.out.println("Hi");
     	InputStream instream = System.in;
 
         if (args.length == 1) {
@@ -44,8 +43,10 @@ public class DNSLookupCUI implements DNSVerbosePrinter {
             e.printStackTrace();
             System.exit(1);
         }
-
+        
+        System.out.println("Scanner start");
         Scanner in = new Scanner(instream);
+        
         Console console = System.console();
         do {
             // Use console if one is available, or standard input if not.
@@ -53,8 +54,10 @@ public class DNSLookupCUI implements DNSVerbosePrinter {
             if (console != null) {
                 System.out.print("DNSLOOKUP> ");
                 commandLine = console.readLine();
+
             } else {
                 try {
+                	// Where the scanner reads my command.
                     commandLine = in.nextLine();
                 } catch (NoSuchElementException ex) {
                     break;
@@ -93,6 +96,7 @@ public class DNSLookupCUI implements DNSVerbosePrinter {
             } else if (commandArgs[0].equalsIgnoreCase("lookup") ||
                     commandArgs[0].equalsIgnoreCase("l")) {
                 // LOOKUP: Find and print all results associated to a name.
+            	System.out.println("Lookups");
                 RecordType type;
                 if (commandArgs.length == 2)
                     type = RecordType.A;
@@ -126,6 +130,7 @@ public class DNSLookupCUI implements DNSVerbosePrinter {
         } while (true);
 
         lookupService.close();
+        in.close();
         System.out.println("Goodbye!");
     }
 

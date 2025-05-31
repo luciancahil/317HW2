@@ -145,7 +145,7 @@ public class DNSLookupService {
     public Set<ResourceRecord> individualQueryProcess(DNSQuestion question, InetAddress server)
             throws DNSErrorException {
         /* TODO: To be implemented by the student */
-    	
+    	Set<ResourceRecord> recordSet;
     	byte[] request = buildQuery(question).getUsed();
         try {
         	System.out.println("Sending");
@@ -159,12 +159,11 @@ public class DNSLookupService {
 	        
 	        DNSMessage responseMessage = new DNSMessage(buffer, response.getLength());
 	        
-	        Set<ResourceRecord> recordSet = processResponse(responseMessage);
+	        recordSet = processResponse(responseMessage);
 
 	        
 	        // TODO: Use the constructor to make new response
 	        
-	        System.out.println("Recieved");
         
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -174,7 +173,7 @@ public class DNSLookupService {
 
         
 
-        return null;
+        return recordSet;
     }
 
     /**

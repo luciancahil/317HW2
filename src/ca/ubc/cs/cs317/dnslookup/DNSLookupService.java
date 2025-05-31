@@ -150,18 +150,17 @@ public class DNSLookupService {
         try {
         	System.out.println("Sending");
 	
-	        DatagramSocket socket = new DatagramSocket();
 	        DatagramPacket packet = new DatagramPacket(request, request.length, server, DEFAULT_DNS_PORT);
 			socket.send(packet);
 			
-	        byte[] buffer = new byte[512];
+	        byte[] buffer = new byte[1024];
 	        DatagramPacket response = new DatagramPacket(buffer, buffer.length);
 	        socket.receive(response);
-	
-	        System.out.println("Response received:");
-	        for (int i = 0; i < response.getLength(); i++) {
-	            System.out.printf("%02X ", buffer[i]);
-	        }
+	        
+	        DNSMessage responseMessage = new DNSMessage(buffer, response.getLength());
+	        
+	        Set<ResourceRecord> recordSet = processResponse(responseMessage);
+
 	        
 	        // TODO: Use the constructor to make new response
 	        
@@ -224,6 +223,35 @@ public class DNSLookupService {
      */
     public Set<ResourceRecord> processResponse(DNSMessage message) throws DNSErrorException {
         /* TODO: To be implemented by the student */
+    	
+
+    	System.out.println("Question num: " + message.getQDCount());
+    	
+    	int qDCount = message.getQDCount();
+    	DNSQuestion question = message.getQuestion();
+    	
+    	
+    	System.out.println("Question: " + question);
+    	
+    	
+    	int numAuth = message.getANCount();
+    	
+    	System.out.println("s: ");
+    	for (int i = 0; i < numAuth; i++) {
+    		System.out.println(message.getRR());
+    	}
+    	
+    	int numNS = message.getNSCount();
+    	
+    	System.out.println("NSs: " + numNS);
+
+    	for (int i = 0; i < numNS; i++) {
+    		System.out.println(message.getRR());
+    	}
+    	
+    	System.out.println(message);
+
+    	
         return null;
     }
 

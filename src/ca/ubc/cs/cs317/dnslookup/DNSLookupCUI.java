@@ -96,7 +96,6 @@ public class DNSLookupCUI implements DNSVerbosePrinter {
             } else if (commandArgs[0].equalsIgnoreCase("lookup") ||
                     commandArgs[0].equalsIgnoreCase("l")) {
                 // LOOKUP: Find and print all results associated to a name.
-            	System.out.println("Lookups");
                 RecordType type;
                 if (commandArgs.length == 2)
                     type = RecordType.A;

@@ -155,30 +155,41 @@ public class DNSLookupService {
     public Set<ResourceRecord> individualQueryProcess(DNSQuestion question, InetAddress server)
             throws DNSErrorException {
         /* TODO: To be implemented by the student */
-    	Set<ResourceRecord> recordSet;
+    	Set<ResourceRecord> recordSet = new HashSet<ResourceRecord>();
     	byte[] request = buildQuery(question).getUsed();
-        try {
-	
-	        DatagramPacket packet = new DatagramPacket(request, request.length, server, DEFAULT_DNS_PORT);
-			socket.send(packet);
-			
-	        byte[] buffer = new byte[1024];
-	        DatagramPacket response = new DatagramPacket(buffer, buffer.length);
-	        socket.receive(response);
-	        
-	        DNSMessage responseMessage = new DNSMessage(buffer, response.getLength());
-	        
-	        recordSet = processResponse(responseMessage);
 
+		
+        byte[] buffer = new byte[MAX_DNS_MESSAGE_LENGTH];
+        DatagramPacket response = new DatagramPacket(buffer, buffer.length);
+        int attempts = 0;
+        boolean received = false;
+	    while(!received && attempts < MAX_QUERY_ATTEMPTS){
+	        try {
+		
+		        DatagramPacket packet = new DatagramPacket(request, request.length, server, DEFAULT_DNS_PORT);
+		        socket.setSoTimeout(SO_TIMEOUT);
+		        
+		        
+				socket.send(packet);
+		        socket.receive(response);
+		        
+		        DNSMessage responseMessage = new DNSMessage(buffer, response.getLength());
+		        
+		        recordSet = processResponse(responseMessage);
+	
+		        received = true;
+		        // TODO: Use the constructor to make new response
+		        
 	        
-	        // TODO: Use the constructor to make new response
-	        
-        
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		}
+			} catch (SocketTimeoutException e) {
+				attempts++;
+			} catch (Exception e) {
+			
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null;
+			}
+	    }
         
 
         

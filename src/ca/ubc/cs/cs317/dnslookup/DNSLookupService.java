@@ -3,7 +3,6 @@ package ca.ubc.cs.cs317.dnslookup;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.util.Random;
 
 public class DNSLookupService {
 
@@ -105,9 +104,23 @@ public class DNSLookupService {
         Set<CommonResourceRecord> ans = new HashSet<>();
         /* TODO: To be implemented by the student */
         DNSQuestion rootQuestion = new DNSQuestion("a.root-servers.net",  RecordType.A, RecordClass.IN);
-        CommonResourceRecord rootServer = cache.getCachedResults(rootQuestion).get(0);
-
-        System.out.println(rootServer.getInetResult());
+        InetAddress rootServer = cache.getCachedResults(rootQuestion).get(0).getInetResult();
+        
+        List<String> sections = Arrays.asList(question.getHostName().split("\\."));
+        
+        int depth = sections.size();
+        
+        InetAddress curAddress = rootServer;
+        
+        for (int i = 1; i <= depth; i++) {
+        	List<String> currentSections = sections.subList(depth - i, depth);
+        	
+    	   String curHost = String.join(".", currentSections); // Separator is ", "
+    	   
+    	   DNSQuestion curQuestion = new DNSQuestion(curHost, question.getRecordType(), question.getRecordClass());
+    	   individualQueryProcess(curQuestion, curAddress);
+        }
+        
 //        individualQueryProcess(question);
         return ans;
     }
@@ -132,6 +145,36 @@ public class DNSLookupService {
     public Set<ResourceRecord> individualQueryProcess(DNSQuestion question, InetAddress server)
             throws DNSErrorException {
         /* TODO: To be implemented by the student */
+    	
+    	byte[] request = buildQuery(question).getUsed();
+        try {
+        	System.out.println("Sending");
+	
+	        DatagramSocket socket = new DatagramSocket();
+	        DatagramPacket packet = new DatagramPacket(request, request.length, server, DEFAULT_DNS_PORT);
+			socket.send(packet);
+			
+	        byte[] buffer = new byte[512];
+	        DatagramPacket response = new DatagramPacket(buffer, buffer.length);
+	        socket.receive(response);
+	
+	        System.out.println("Response received:");
+	        for (int i = 0; i < response.getLength(); i++) {
+	            System.out.printf("%02X ", buffer[i]);
+	        }
+	        
+	        // TODO: Use the constructor to make new response
+	        
+	        System.out.println("Recieved");
+        
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+
+        
+
         return null;
     }
 
@@ -149,16 +192,18 @@ public class DNSLookupService {
         /* TODO: To be implemented by the student */
     	
     	
-    	// get random number
+    	// get random id
     	Random r = new Random();
         int id = r.nextInt(0xffff + 1);
+        
     	DNSMessage message = new DNSMessage((short)id);
-    	message.setQR(false);
     	message.addQuestion(question);
     	
-    	// We don't need to do anything for the second row, as all 0's is what we want.
     	
     	message.setQDCount(1);
+    	
+    	// We don't need to do anything for anything else, as all 0's is what we want.
+
     	
 
         return message;

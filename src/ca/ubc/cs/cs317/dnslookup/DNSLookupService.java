@@ -103,14 +103,16 @@ public class DNSLookupService {
             throws DNSErrorException {
         Set<CommonResourceRecord> ans = new HashSet<>();
         /* TODO: To be implemented by the student */
-        DNSQuestion rootQuestion = new DNSQuestion("a.root-servers.net",  RecordType.A, RecordClass.IN);
-        InetAddress rootServer = cache.getCachedResults(rootQuestion).get(0).getInetResult();
+
+        InetAddress bestServer = getBestInet(question);
+
         
+        System.out.println(bestServer);
         List<String> sections = Arrays.asList(question.getHostName().split("\\."));
         
         int depth = sections.size();
         
-        InetAddress curAddress = rootServer;
+        InetAddress curAddress = bestServer;
         
         for (int i = 1; i <= depth; i++) {
         	List<String> currentSections = sections.subList(depth - i, depth);
@@ -123,6 +125,16 @@ public class DNSLookupService {
         
 //        individualQueryProcess(question);
         return ans;
+    }
+    
+    private InetAddress getBestInet(DNSQuestion question) {
+    	
+        CommonResourceRecord best = cache.getBestNameservers(question).get(0);
+
+        DNSQuestion bestQuestion = new DNSQuestion(best.getTextResult(),  RecordType.A, RecordClass.IN);
+        InetAddress bestServer = cache.getCachedResults(bestQuestion).get(0).getInetResult();
+        
+        return bestServer;
     }
 
     /**

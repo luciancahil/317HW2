@@ -104,23 +104,13 @@ public class DNSLookupService {
         Set<CommonResourceRecord> ans = new HashSet<>();
         /* TODO: To be implemented by the student */
 
-        InetAddress bestServer = getBestInet(question);
+        InetAddress curAddress;
 
         
-        System.out.println(bestServer);
-        List<String> sections = Arrays.asList(question.getHostName().split("\\."));
-        
-        int depth = sections.size();
-        
-        InetAddress curAddress = bestServer;
-        
-        for (int i = 1; i <= depth; i++) {
-        	List<String> currentSections = sections.subList(depth - i, depth);
-        	
-    	   String curHost = String.join(".", currentSections); // Separator is ", "
-    	   
-    	   DNSQuestion curQuestion = new DNSQuestion(curHost, question.getRecordType(), question.getRecordClass());
-    	   individualQueryProcess(curQuestion, curAddress);
+        for (int i = 1; i <= 100; i++) {
+        	curAddress =  getBestInet(question);
+        	System.out.println(curAddress);
+        	individualQueryProcess(question, curAddress);
         }
         
 //        individualQueryProcess(question);
@@ -132,9 +122,10 @@ public class DNSLookupService {
         CommonResourceRecord best = cache.getBestNameservers(question).get(0);
 
         DNSQuestion bestQuestion = new DNSQuestion(best.getTextResult(),  RecordType.A, RecordClass.IN);
-        InetAddress bestServer = cache.getCachedResults(bestQuestion).get(0).getInetResult();
-        
-        return bestServer;
+        CommonResourceRecord bestServer = cache.getCachedResults(bestQuestion).get(0);
+    	System.out.println(bestServer);
+
+        return bestServer.getInetResult();
     }
 
     /**
@@ -182,6 +173,12 @@ public class DNSLookupService {
 			e.printStackTrace();
 			return null;
 		}
+        
+        for (ResourceRecord record: recordSet) {
+        	if(record instanceof CommonResourceRecord) { 
+        		cache.addResult((CommonResourceRecord) record);
+        	}
+        }
 
         
 

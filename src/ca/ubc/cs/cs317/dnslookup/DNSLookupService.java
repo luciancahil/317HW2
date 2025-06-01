@@ -270,7 +270,11 @@ public class DNSLookupService {
     	}
 
 
-
+        for (ResourceRecord record: recordSet) {
+        	if(record instanceof CommonResourceRecord) { 
+        		cache.addResult((CommonResourceRecord) record);
+        	}
+        }
     	
         return recordSet;
     }

@@ -108,6 +108,10 @@ public class DNSLookupService {
         InetAddress curAddress;
         List<CommonResourceRecord> cached = cache.getCachedResults(question);
         
+        DNSQuestion origQuestion = new DNSQuestion(question.getHostName(), question.getRecordType(), question.getRecordClass());
+        
+        boolean didNameserver = false;
+        
         while (cached.size() == 0){
         	
 
@@ -129,6 +133,7 @@ public class DNSLookupService {
 
             
             if(bestServers.size() == 0) {
+            	didNameserver = true;
             	System.out.println("HERE!");
             	question = bestQuestion;
             	bestNS = cache.getBestNameservers(question);
@@ -145,6 +150,13 @@ public class DNSLookupService {
 
             
             cached = cache.getCachedResults(question);
+        }
+        
+        if(didNameserver) {
+        	curAddress = cached.get(0).getInetResult();
+        	individualQueryProcess(origQuestion, curAddress);
+            cached = cache.getCachedResults(origQuestion);
+
         }
         
         ans.addAll(cached);

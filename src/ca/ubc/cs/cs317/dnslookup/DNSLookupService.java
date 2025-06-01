@@ -216,7 +216,6 @@ public class DNSLookupService {
 		        socket.receive(response);
 		        
 		        DNSMessage responseMessage = new DNSMessage(buffer, response.getLength());
-		        System.out.println("Length: " + response.getLength());
 		        
 		        if(responseMessage.getID() != query.getID() || !responseMessage.getQR()) {
 		        	continue;
@@ -224,7 +223,6 @@ public class DNSLookupService {
 		        
 		        recordSet = processResponse(responseMessage);
 		        
-		        System.out.println("Length: " + recordSet);
 
 		        if(recordSet == null) {
 		        	recordSet = useTCP(query, server, question);
@@ -264,7 +262,6 @@ public class DNSLookupService {
         this.verbose.printQueryToSend("TCP", question, server, query.getID());
 
 
-    	System.out.println("TCP: " + request.length);
     	Set<ResourceRecord> recordSet = null;
     	
     	Socket tcpSocket;

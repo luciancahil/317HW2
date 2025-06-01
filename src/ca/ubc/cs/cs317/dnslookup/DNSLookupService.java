@@ -287,6 +287,7 @@ public class DNSLookupService {
 
 	        
 	        recordSet = processResponse(responseMessage);
+	        tcpSocket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (DNSErrorException e) {

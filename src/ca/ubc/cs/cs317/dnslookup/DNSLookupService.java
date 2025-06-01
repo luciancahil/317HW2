@@ -134,10 +134,8 @@ public class DNSLookupService {
             
             if(bestServers.size() == 0) {
             	didNameserver = true;
-            	System.out.println("HERE!");
             	question = bestQuestion;
             	bestNS = cache.getBestNameservers(question);
-            	System.out.println(bestNS);
             	CommonResourceRecord best = bestNS.get(0);
             	bestQuestion = new DNSQuestion(best.getTextResult(),  RecordType.A, RecordClass.IN);
                 bestServers = cache.getCachedResults(bestQuestion);

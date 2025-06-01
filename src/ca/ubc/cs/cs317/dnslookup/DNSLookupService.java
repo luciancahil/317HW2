@@ -323,7 +323,7 @@ public class DNSLookupService {
         for (int i = 0; i < anCount; i++) {
         	ResourceRecord rRecord = message.getRR();
     		recordSet.add(rRecord);
-    		this.verbose.printIndividualResourceRecord(rRecord, rRecord.getRecordClassCode(), 0);
+    		this.verbose.printIndividualResourceRecord(rRecord, rRecord.getRecordType().getCode(), rRecord.getQuestion().getRecordClass().getCode());
         }
 
         int nsCount = message.getNSCount();
@@ -332,7 +332,7 @@ public class DNSLookupService {
         for (int i = 0; i < nsCount; i++) {
         	ResourceRecord rRecord = message.getRR();
     		recordSet.add(rRecord);
-    		this.verbose.printIndividualResourceRecord(rRecord, rRecord.getRecordClassCode(), 0);
+    		this.verbose.printIndividualResourceRecord(rRecord, rRecord.getRecordType().getCode(), rRecord.getQuestion().getRecordClass().getCode());
         }
         
         int arCount = message.getARCount();
@@ -341,7 +341,7 @@ public class DNSLookupService {
         for (int i = 0; i < arCount; i++) {
         	ResourceRecord rRecord = message.getRR();
     		recordSet.add(rRecord);
-    		this.verbose.printIndividualResourceRecord(rRecord, rRecord.getRecordClassCode(), 0);
+    		this.verbose.printIndividualResourceRecord(rRecord, rRecord.getRecordType().getCode(), rRecord.getQuestion().getRecordClass().getCode());
         }
 
         for (ResourceRecord record: recordSet) {

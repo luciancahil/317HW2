@@ -188,11 +188,7 @@ public class DNSLookupService {
 				return null;
 			}
 	    }
-        for (ResourceRecord record: recordSet) {
-        	if(record instanceof CommonResourceRecord) { 
-        		cache.addResult((CommonResourceRecord) record);
-        	}
-        }
+
 
         
 
@@ -267,7 +263,9 @@ public class DNSLookupService {
     	int numRecords = message.getANCount() + message.getNSCount() + message.getARCount();
     	
     	for (int i = 0; i < numRecords; i++) {
-    		recordSet.add(message.getRR());
+    		ResourceRecord record = message.getRR();
+    		recordSet.add(record);
+    		cache.addResult((CommonResourceRecord) record);
     	}
 
 

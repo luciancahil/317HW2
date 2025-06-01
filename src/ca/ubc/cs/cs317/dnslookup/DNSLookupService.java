@@ -216,6 +216,7 @@ public class DNSLookupService {
 		        socket.receive(response);
 		        
 		        DNSMessage responseMessage = new DNSMessage(buffer, response.getLength());
+		        System.out.println("Length: " + response.getLength());
 		        
 		        if(responseMessage.getID() != query.getID() || !responseMessage.getQR()) {
 		        	continue;
@@ -223,8 +224,10 @@ public class DNSLookupService {
 		        
 		        recordSet = processResponse(responseMessage);
 		        
+		        System.out.println("Length: " + recordSet);
+
 		        if(recordSet == null) {
-		        	useTCP(query);
+		        	recordSet = useTCP(query, server, question);
 		        }
 		        
 		        received = true;
@@ -254,13 +257,45 @@ public class DNSLookupService {
         return recordSet;
     }
     
-    private Set<ResourceRecord> useTCP(DNSMessage query) {
+    private Set<ResourceRecord> useTCP(DNSMessage query, InetAddress server, DNSQuestion question) {
     	byte[] request = query.getUsed();
+    	int len = request.length;
+
+        this.verbose.printQueryToSend("TCP", question, server, query.getID());
+
 
     	System.out.println("TCP: " + request.length);
+    	Set<ResourceRecord> recordSet = null;
     	
+    	Socket tcpSocket;
+		try {
+			tcpSocket = new Socket(server, 53);
+
+	    	OutputStream os = tcpSocket.getOutputStream();
+	    	InputStream is = tcpSocket.getInputStream();
+	    	os.write((len >> 8) & 0xFF);
+	    	os.write(len & 0xFF);
+	    	os.write(request);
+	    	int lenHi = is.read();
+	    	int lenLo = is.read();
+	    	int responseLen = (lenHi << 8) | lenLo;
+
+	    	byte[] buffer = new byte[responseLen];
+	    	is.read(buffer);
+	    	
+	        DNSMessage responseMessage = new DNSMessage(buffer, responseLen);
+
+	        
+	        recordSet = processResponse(responseMessage);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (DNSErrorException e) {
+			
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     	
-    	return null;
+    	return recordSet;
     }
     
 

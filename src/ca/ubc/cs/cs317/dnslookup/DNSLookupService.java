@@ -17,6 +17,7 @@ public class DNSLookupService {
     private final Random random = new Random();
     private final DNSVerbosePrinter verbose;
     private final DatagramSocket socket;
+	private DNSQuestion bestQuestion;
 
     /**
      * Creates a new lookup service. Also initializes the datagram socket object with a default timeout.
@@ -113,10 +114,11 @@ public class DNSLookupService {
 
             List<CommonResourceRecord> bestNS = cache.getBestNameservers(question);
             List<CommonResourceRecord> bestServers = new ArrayList<CommonResourceRecord>();
+            DNSQuestion bestQuestion = null;
             
             for (int i = 0; i < bestNS.size(); i++) {
             	CommonResourceRecord best = bestNS.get(i);
-                DNSQuestion bestQuestion = new DNSQuestion(best.getTextResult(),  RecordType.A, RecordClass.IN);
+                bestQuestion = new DNSQuestion(best.getTextResult(),  RecordType.A, RecordClass.IN);
                 bestServers = cache.getCachedResults(bestQuestion);
                 
                 if(bestServers.size() != 0) {
@@ -127,8 +129,14 @@ public class DNSLookupService {
 
             
             if(bestServers.size() == 0) {
+            	System.out.println("HERE!");
+            	question = bestQuestion;
+            	bestNS = cache.getBestNameservers(question);
             	System.out.println(bestNS);
-            	int s = 1/0;
+            	CommonResourceRecord best = bestNS.get(0);
+            	bestQuestion = new DNSQuestion(best.getTextResult(),  RecordType.A, RecordClass.IN);
+                bestServers = cache.getCachedResults(bestQuestion);
+
             }
             
             curAddress = bestServers.get(0).getInetResult();

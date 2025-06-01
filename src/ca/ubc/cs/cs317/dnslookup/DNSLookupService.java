@@ -223,6 +223,10 @@ public class DNSLookupService {
 		        
 		        recordSet = processResponse(responseMessage);
 		        
+		        if(recordSet == null) {
+		        	useTCP(query);
+		        }
+		        
 		        received = true;
 		        
 	        
@@ -248,6 +252,15 @@ public class DNSLookupService {
         
 
         return recordSet;
+    }
+    
+    private Set<ResourceRecord> useTCP(DNSMessage query) {
+    	byte[] request = query.getUsed();
+
+    	System.out.println("TCP: " + request.length);
+    	
+    	
+    	return null;
     }
     
 
@@ -304,6 +317,11 @@ public class DNSLookupService {
     		throw new DNSErrorException("Rcode was not 0");
     	}
     	
+    	this.verbose.printResponseHeaderInfo(message.getID(), message.getAA(), message.getTC(), message.getRcode());
+    	
+    	if(message.getTC()) {
+    		return null;
+    	}
     	
     
     		

@@ -111,11 +111,7 @@ public class DNSLookupService {
         	curAddress =  getBestInet(question);
         	Set<ResourceRecord> newRecordds = individualQueryProcess(question, curAddress);
         	
-            for (ResourceRecord record: newRecordds) {
-            	if(record instanceof CommonResourceRecord) { 
-            		cache.addResult((CommonResourceRecord) record);
-            	}
-            }
+
             cached = cache.getCachedResults(question);
         }
         
@@ -176,9 +172,8 @@ public class DNSLookupService {
 		        DNSMessage responseMessage = new DNSMessage(buffer, response.getLength());
 		        
 		        recordSet = processResponse(responseMessage);
-	
+		        this.verbose.printQueryToSend("UDP", question, server, responseMessage.getID());
 		        received = true;
-		        // TODO: Use the constructor to make new response
 		        
 	        
 			} catch (SocketTimeoutException e) {
@@ -190,7 +185,11 @@ public class DNSLookupService {
 				return null;
 			}
 	    }
-        
+        for (ResourceRecord record: recordSet) {
+        	if(record instanceof CommonResourceRecord) { 
+        		cache.addResult((CommonResourceRecord) record);
+        	}
+        }
 
         
 

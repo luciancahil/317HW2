@@ -172,7 +172,8 @@ public class DNSLookupService {
 		        DNSMessage responseMessage = new DNSMessage(buffer, response.getLength());
 		        
 		        recordSet = processResponse(responseMessage);
-		        this.verbose.printQueryToSend("UDP", question, server, responseMessage.getID());
+		        
+		        runVerbose(question, server, responseMessage);
 		        received = true;
 		        
 	        
@@ -194,6 +195,13 @@ public class DNSLookupService {
         
 
         return recordSet;
+    }
+    
+    private void runVerbose(DNSQuestion question, InetAddress server, DNSMessage responseMessage) {
+        this.verbose.printQueryToSend("UDP", question, server, responseMessage.getID());
+        this.verbose.printResponseHeaderInfo(responseMessage.getID(), responseMessage.getAA(), responseMessage.getTC(), responseMessage.getRcode());
+        this.verbose.printAnswersHeader(responseMessage.getANCount());
+        this.verbose.printNameserversHeader(responseMessage.getNSCount());
     }
 
     /**

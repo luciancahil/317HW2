@@ -152,7 +152,8 @@ public class DNSLookupService {
             throws DNSErrorException {
         /* TODO: To be implemented by the student */
     	Set<ResourceRecord> recordSet = new HashSet<ResourceRecord>();
-    	byte[] request = buildQuery(question).getUsed();
+    	DNSMessage message = buildQuery(question);
+    	byte[] request = message.getUsed();
 
 		
         byte[] buffer = new byte[MAX_DNS_MESSAGE_LENGTH];
@@ -165,7 +166,8 @@ public class DNSLookupService {
 		        DatagramPacket packet = new DatagramPacket(request, request.length, server, DEFAULT_DNS_PORT);
 		        socket.setSoTimeout(SO_TIMEOUT);
 		        
-		        
+		        this.verbose.printQueryToSend("UDP", question, server, message.getID());
+
 				socket.send(packet);
 		        socket.receive(response);
 		        
@@ -198,7 +200,6 @@ public class DNSLookupService {
     }
     
     private void runVerbose(DNSQuestion question, InetAddress server, DNSMessage responseMessage) {
-        this.verbose.printQueryToSend("UDP", question, server, responseMessage.getID());
         this.verbose.printResponseHeaderInfo(responseMessage.getID(), responseMessage.getAA(), responseMessage.getTC(), responseMessage.getRcode());
         this.verbose.printAnswersHeader(responseMessage.getANCount());
         this.verbose.printNameserversHeader(responseMessage.getNSCount());

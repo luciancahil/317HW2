@@ -108,10 +108,34 @@ public class DNSLookupService {
         List<CommonResourceRecord> cached = cache.getCachedResults(question);
         
         while (cached.size() == 0){
-        	curAddress =  getBestInet(question);
-        	Set<ResourceRecord> newRecordds = individualQueryProcess(question, curAddress);
         	
 
+
+            List<CommonResourceRecord> bestNS = cache.getBestNameservers(question);
+            List<CommonResourceRecord> bestServers = new ArrayList<CommonResourceRecord>();
+            
+            for (int i = 0; i < bestNS.size(); i++) {
+            	CommonResourceRecord best = bestNS.get(i);
+                DNSQuestion bestQuestion = new DNSQuestion(best.getTextResult(),  RecordType.A, RecordClass.IN);
+                bestServers = cache.getCachedResults(bestQuestion);
+                
+                if(bestServers.size() != 0) {
+                	break;
+                }
+            }
+
+
+            
+            if(bestServers.size() == 0) {
+            	System.out.println(bestNS);
+            	int s = 1/0;
+            }
+            
+            curAddress = bestServers.get(0).getInetResult();
+            
+        	Set<ResourceRecord> newRecordds = individualQueryProcess(question, curAddress);
+
+            
             cached = cache.getCachedResults(question);
         }
         
@@ -126,13 +150,9 @@ public class DNSLookupService {
         CommonResourceRecord best = cache.getBestNameservers(question).get(0);
 
         DNSQuestion bestQuestion = new DNSQuestion(best.getTextResult(),  RecordType.A, RecordClass.IN);
-        List<CommonResourceRecord> bestServers = cache.getCachedResults(bestQuestion);
-        
-        if(bestServers.size() == 0) {
-        	return null;
-        }
+        CommonResourceRecord bestServer = cache.getCachedResults(bestQuestion).get(0);
 
-        return bestServers.get(0).getInetResult();
+        return bestServer.getInetResult();
     }
 
     /**

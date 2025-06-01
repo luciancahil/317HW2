@@ -218,7 +218,7 @@ public class DNSLookupService {
 		        DNSMessage responseMessage = new DNSMessage(buffer, response.getLength());
 		        
 		        if(responseMessage.getID() != query.getID() || !responseMessage.getQR()) {
-		        	return null;
+		        	continue;
 		        }
 		        
 		        recordSet = processResponse(responseMessage);
@@ -304,9 +304,17 @@ public class DNSLookupService {
     		throw new DNSErrorException("Rcode was not 0");
     	}
     	
+    	
+    
+    		
     	Set<ResourceRecord> recordSet = new HashSet<ResourceRecord>();
     	
-    	DNSQuestion question = message.getQuestion();
+    	int numQuestions = message.getQDCount();
+    	DNSQuestion question = null;
+    	
+    	for (int i = 0; i < numQuestions; i++) {
+    		question = message.getQuestion();
+    	}
     	
     	int anCount = message.getANCount();
     	
@@ -319,7 +327,7 @@ public class DNSLookupService {
         }
 
         int nsCount = message.getNSCount();
-        this.verbose.printNameserversHeader(anCount);
+        this.verbose.printNameserversHeader(nsCount);
 
         for (int i = 0; i < nsCount; i++) {
         	ResourceRecord rRecord = message.getRR();

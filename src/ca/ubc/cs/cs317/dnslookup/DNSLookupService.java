@@ -122,17 +122,17 @@ public class DNSLookupService {
     }
     
     private InetAddress getBestInet(DNSQuestion question) {
-    	
+
         CommonResourceRecord best = cache.getBestNameservers(question).get(0);
 
-		try {
-			return InetAddress.getByName(best.getTextResult());
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        DNSQuestion bestQuestion = new DNSQuestion(best.getTextResult(),  RecordType.A, RecordClass.IN);
+        List<CommonResourceRecord> bestServers = cache.getCachedResults(bestQuestion);
         
-		return null;
+        if(bestServers.size() == 0) {
+        	return null;
+        }
+
+        return bestServers.get(0).getInetResult();
     }
 
     /**

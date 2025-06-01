@@ -125,10 +125,14 @@ public class DNSLookupService {
     	
         CommonResourceRecord best = cache.getBestNameservers(question).get(0);
 
-        DNSQuestion bestQuestion = new DNSQuestion(best.getTextResult(),  RecordType.A, RecordClass.IN);
-        CommonResourceRecord bestServer = cache.getCachedResults(bestQuestion).get(0);
-
-        return bestServer.getInetResult();
+		try {
+			return InetAddress.getByName(best.getTextResult());
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+		return null;
     }
 
     /**
@@ -153,7 +157,9 @@ public class DNSLookupService {
         /* TODO: To be implemented by the student */
     	Set<ResourceRecord> recordSet = new HashSet<ResourceRecord>();
 
+    
 		DNSMessage query = buildQuery(question);
+		
     	byte[] request = query.getUsed();
 
         byte[] buffer = new byte[MAX_DNS_MESSAGE_LENGTH];
@@ -173,9 +179,12 @@ public class DNSLookupService {
 		        
 		        DNSMessage responseMessage = new DNSMessage(buffer, response.getLength());
 		        
+		        if(responseMessage.getID() != query.getID() || !responseMessage.getQR()) {
+		        	return null;
+		        }
+		        
 		        recordSet = processResponse(responseMessage);
 		        
-		        runVerbose(question, server, responseMessage);
 		        received = true;
 		        
 	        
@@ -188,6 +197,10 @@ public class DNSLookupService {
 				return null;
 			}
 	    }
+	    
+	    if (!received) {
+	    	return null;
+	    }
         for (ResourceRecord record: recordSet) {
         	if(record instanceof CommonResourceRecord) { 
         		cache.addResult((CommonResourceRecord) record);
@@ -199,11 +212,7 @@ public class DNSLookupService {
         return recordSet;
     }
     
-    private void runVerbose(DNSQuestion question, InetAddress server, DNSMessage responseMessage) {
-        this.verbose.printResponseHeaderInfo(responseMessage.getID(), responseMessage.getAA(), responseMessage.getTC(), responseMessage.getRcode());
-        this.verbose.printAnswersHeader(responseMessage.getANCount());
-        this.verbose.printNameserversHeader(responseMessage.getNSCount());
-    }
+
 
     /**
      * Creates a DNSMessage containing a DNS query.
@@ -259,17 +268,35 @@ public class DNSLookupService {
     	
     	Set<ResourceRecord> recordSet = new HashSet<ResourceRecord>();
     	
-    	int qDCount = message.getQDCount();
     	DNSQuestion question = message.getQuestion();
     	
+    	int anCount = message.getANCount();
     	
-    	
-    	int numRecords = message.getANCount() + message.getNSCount() + message.getARCount();
-    	
-    	for (int i = 0; i < numRecords; i++) {
-    		recordSet.add(message.getRR());
-    	}
+        this.verbose.printAnswersHeader(anCount);
+        
+        for (int i = 0; i < anCount; i++) {
+        	ResourceRecord rRecord = message.getRR();
+    		recordSet.add(rRecord);
+    		this.verbose.printIndividualResourceRecord(rRecord, rRecord.getRecordClassCode(), 0);
+        }
 
+        int nsCount = message.getNSCount();
+        this.verbose.printNameserversHeader(anCount);
+
+        for (int i = 0; i < nsCount; i++) {
+        	ResourceRecord rRecord = message.getRR();
+    		recordSet.add(rRecord);
+    		this.verbose.printIndividualResourceRecord(rRecord, rRecord.getRecordClassCode(), 0);
+        }
+        
+        int arCount = message.getARCount();
+
+        this.verbose.printAdditionalInfoHeader(arCount);
+        for (int i = 0; i < arCount; i++) {
+        	ResourceRecord rRecord = message.getRR();
+    		recordSet.add(rRecord);
+    		this.verbose.printIndividualResourceRecord(rRecord, rRecord.getRecordClassCode(), 0);
+        }
 
         for (ResourceRecord record: recordSet) {
         	if(record instanceof CommonResourceRecord) { 
